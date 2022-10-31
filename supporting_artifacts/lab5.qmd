@@ -1,0 +1,163 @@
+---
+title: "Lab 5"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    backgroundcolor: "#f0efed"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+editor: visual
+execute: 
+  echo: true
+  error: true
+---
+
+### Set-Up
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(here)
+library(lubridate)
+library(ggthemr)
+
+```
+
+### Loading Data
+
+```{r}
+#| message: false
+surveys <- read_csv(here::here("supporting_artifacts", "supporting_data", "surveys.csv"),
+                    show_col_types = TRUE)
+```
+
+### Part 1: Revisiting Lab 2
+
+#### 1.1
+
+```{r}
+
+ggthemr('dust')
+surveys <- surveys |>
+  mutate(species = as.factor(species),
+         species = fct_reorder(species, weight))
+
+ggplot(data = surveys,
+       mapping = aes(x = weight, y = species)) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "tomato",
+              alpha = 0.01) +
+  labs(x = "Weight", y = "Species")
+```
+
+#### 1.2
+
+```{r}
+ggplot(data = surveys,
+       mapping = aes(x = weight, y = species)) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "tomato",
+              alpha = 0.01) +
+  labs(title = "Weight by Species", x = "", y = "")
+
+```
+
+### Part 2: Time-Series Plot
+
+#### 2.1
+
+```{r}
+surveys_gen <- surveys |>
+  mutate(date = make_datetime(date))
+
+
+ggplot(data = surveys_gen,
+       mapping = aes(x = year, y = weight, color = genus)) + 
+  geom_point()
+
+```
+
+#### 2.2
+
+```{r}
+#| message: false
+#| warning: false
+surveys_gen <- surveys |>
+  group_by(genus, year) |>
+  summarise(mean_weight = mean(weight))
+
+ggplot(data = surveys_gen,
+       mapping = aes(x = year, y = mean_weight, color = genus)) + 
+  geom_line()
+
+```
+
+#### 2.3
+
+```{r}
+surveys_gen <- surveys_gen |>
+  mutate(genus = as.factor(genus))
+
+ggplot(data = surveys_gen,
+       mapping = aes(x = year, y = mean_weight,
+                     color = fct_reorder(genus, -mean_weight))) +
+  geom_line()
+```
+
+#### 2.4
+
+```{r}
+surveys_gen <- surveys_gen |>
+  mutate(genus = as.factor(genus))
+
+ggplot(data = surveys_gen,
+       mapping = aes(x = year, y = mean_weight,
+                     color = fct_reorder(genus, -mean_weight))) +
+  guides(color = guide_legend(title = "Genus")) + 
+  geom_line() +
+  labs(title = "Average Genus Weight (grams) by Year", x = "", y = "")
+```
+
+### Part 3: Captures over the Week
+
+#### 3.1
+
+```{r}
+surveys_rod <- surveys |>
+  mutate(week_day = wday(date, label = TRUE, abbr = FALSE)) |>
+  filter(week_day != "NA")
+
+ggplot(data = surveys_rod, mapping = aes(y = week_day)) +
+  geom_bar() +
+  labs(x = "", y = "", title = "Number of Rodents Caught per Weekday")
+  
+```
+
+#### 3.2
+
+```{r}
+surveys_rod <- surveys_rod |>
+  mutate(week_day = fct_relevel(week_day, "Sunday", after = Inf))
+
+ggplot(data = surveys_rod, mapping = aes(y = week_day)) +
+  geom_bar() +
+  labs(x = "", y = "", title = "Number of Rodents Caught per Weekday")
+```
+
+#### 3.3
+
+```{r}
+surveys_ww <- surveys_rod |>
+  mutate(week_day = fct_collapse(week_day,
+                                 Weekend = c("Saturday", "Sunday"),
+                                 other_level = "Weekday"))
+
+ggplot(data = surveys_ww,
+       mapping = aes(x = week_day)) +
+  geom_bar() +
+  labs(x = "",
+       y = "", 
+       title = "Number of Rodents Caught Weekday versus Weekend")
+```

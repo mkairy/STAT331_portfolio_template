@@ -1,0 +1,87 @@
+---
+title: "Challenge 3"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    backgroundcolor: "#f0efed"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+editor: visual
+execute: 
+  echo: true
+  error: true
+---
+
+### Loading Libraries
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(here)
+library(stringr)
+```
+
+### Loading Data
+
+```{r}
+#| message: false
+hiphop <- read_csv(here::here("supporting_artifacts", "supporting_data", "hiphop.csv"))
+```
+
+### Data Cleaning
+
+```{r}
+hiphop <- hiphop |>
+  mutate(sex = as.factor(sex),
+         ethnic = ifelse(ethnic == "white", ethnic, "non-white"),
+         subj = as.numeric(str_replace_all(subj, "p", "")),
+         familiarity = as.numeric(familiarity))
+```
+
+#### 1. Comparisons
+
+```{r}
+hiphop <- hiphop |>
+  distinct(subj, .keep_all = TRUE) |>
+  select(sex, ethnic,  intl:unclassifiable) 
+```
+
+[When I first attempted this problem, I was so caught up in not using the same function twice (summarise) that I couldn't figure out a simple way to find the difference in means. Additionally, I wasn't sure if the greatest difference would be the relative difference or just the plain difference, which gave me different answers in part a. Looking back at this problem, I can see that calling the same function multiple times can sometimes be the most efficient way to code, and I shouldn't be afraid to do that.]{style="color: brown;"}
+
+```{r}
+hiphop_mf <- hiphop |>
+  group_by(sex) |>
+  summarise(across(.cols = c(intl:unclassifiable),
+                   .fns = mean,
+                   .names = "mean_{.col}"))
+hiphop_mf |>
+  summarise(across(.cols = c(mean_intl:mean_unclassifiable),
+                   .fns = diff,
+                   .names = "diff_{.col}"))
+
+```
+
+For male versus female participants, the biggest difference in number of artists known in a particular category, on average, is in vocal, where the difference between the mean known artists is 0.6882856 (males know 0.688 more vocal artists than females on average).
+
+```{r}
+hiphop_ethnic <- hiphop |>
+  group_by(ethnic) |>
+  summarise(across(.cols = c(intl:unclassifiable),
+                   .fns = mean,
+                   .names = "mean_{.col}"))
+
+hiphop_ethnic |>
+  summarise(across(.cols = c(mean_intl:mean_unclassifiable),
+                   .fns = diff,
+                   .names = "diff_{.col}"))
+```
+
+For white versus non-white participants, the biggest difference in number of artists known in a particular category, on average, is in the international genre, where the difference between the mean known artists is 1.592593 (non-white participants know 1.59 more international artists than white participants on average).
+
+#### 2. Study Design Concerns
+
+First, I am concerned about this study because the students involved come from just one university, which has a majority white student body.
+
+Secondly, the study does not seem to have used a random sample, where the researcher simply asked students in a few classes to fill out a survey and self report demographic information.

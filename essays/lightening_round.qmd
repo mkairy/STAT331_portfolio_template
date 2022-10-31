@@ -3,3 +3,13 @@ title: "Lightening Round Essays"
 format: html
 editor: visual
 ---
+
+If Caleb Jensen doesn\'t earn an A, then nobody should, because, while everyone in my group is an incredible student, Caleb is not only determined to solve practice activities and Labs for himself, but also for the group at large. He makes sure that everyone in our group is progressing through the assignment and is incredibly encouraging and supportive.
+
+The most difficult part of the class for me was the concept of key identifiers. Although I understood them in the context of databases, I had a hard time knowing how to deal with them practically, especially when pivoting them.
+
+The easiest part of the class for me was the main functions of dplyr. I just recently started using dplyr for summer research, so I was quickly able to filter and subset with some of the techniques I\'d already been using. The only challenge for me was switching to the \"\|\>\" pipe operator after growing attached to the \"%\>%\" operator.
+
+I was most interested in real expressions with stringr. I\'d previously seen some of these in other people\'s code (whether in online forums or from professors) and it always looked like gibberish that made my eyes glaze over. Finally learning what each symbol or operator meant was probably the most useful thing I\'ve learned all quarter because I instantly started thinking of projects I could use it for; learning real expressions unlocked a whole area of problems I didn\'t think I could easily solve.
+
+If you\'ve already used R in other classes, don\'t think that means you don\'t have to put as much effort into STAT 331 as anyone else. Labs and practice activities will still be challenging, and the methods you\'ve already learned might actually prevent you from thinking creatively or efficiently. Take every assignment as an opportunity to learn more efficient ways to solve problems, make your code and html look \"prettier,\" and use methods you have less familiarity with.

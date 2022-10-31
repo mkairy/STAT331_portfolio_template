@@ -1,0 +1,114 @@
+---
+title: "Challenge 4"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    backgroundcolor: "#f0efed"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+editor: visual
+execute: 
+  echo: true
+  error: true
+---
+
+#### Set-Up
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(here)
+library(ggthemr)
+```
+
+#### Data
+
+```{r}
+#| message: false
+avocado <- read_csv(here::here("supporting_artifacts", "supporting_data", "avocado.csv"))
+```
+
+#### Data Cleaning
+
+```{r}
+ca_city = data.frame(city = c("LosAngeles", "SanDiego", "Sacramento", "SanFrancisco"))
+
+avocado <- avocado |>
+  filter(region != "TotalUS") |>
+  rename(small = `4046`, large = `4225`, xlarge = `4770`)
+
+```
+
+## Challenge Problem
+
+### Set-Up
+
+Data for this challenge comes from FRED's All Transcations House Price Index series for San Diego, LA, San Francsico, and Sacramento.
+
+```{r}
+#| message: false
+#| warning: false
+sandiego <- read_csv(here::here("supporting_artifacts", "supporting_data", "sandiego.csv"))
+sac <- read_csv(here::here("supporting_artifacts", "supporting_data", "sac.csv"))
+sanfran <- read_csv(here::here("supporting_artifacts", "supporting_data", "sanfran.csv"))
+la <- read_csv(here::here("supporting_artifacts", "supporting_data", "la.csv"))
+```
+
+### Data Cleaning
+
+```{r}
+#| message: false
+avocado_cal <- avocado |>
+  semi_join(ca_city, by = c("region" = "city")) |>
+  group_by(region, year) |>
+  summarise(avocado_price = mean(AveragePrice),
+            avocado_volume = mean(`Total Volume`)) |>
+  mutate(year = as.factor(year))
+
+house_prices <- sandiego |>
+  full_join(sac, by = c("DATE" = "DATE")) |>
+  full_join(la, by = c("DATE" = "DATE")) |>
+  full_join(sanfran, by = c("DATE" = "DATE")) |>
+  separate(DATE, c("year", "month", "day"), "-") |>
+  rename(LosAngeles = ATNHPIUS06037A,
+         SanDiego = ATNHPIUS06073A,
+         SanFrancisco = ATNHPIUS41884Q,
+         Sacramento = ATNHPIUS06067A) |>
+  mutate(across(where(is.numeric), ~.*2000),
+         year = as.factor(year)) |>
+  pivot_longer(cols = SanDiego:SanFrancisco,
+               names_to = "city",
+               values_to = "price") |>
+  group_by(city, year) |>
+  summarise(house_price = mean(price, na.rm = TRUE))
+
+```
+
+### Merge Data
+
+```{r}
+avocado_houses <- house_prices |>
+  inner_join(avocado_cal, by = c("city" = "region", "year" = "year"))
+```
+
+### Plot Data
+
+```{r}
+ggthemr("dust")
+ggplot(data = avocado_houses) +
+  geom_boxplot(mapping = aes(x = year, y = house_price)) +
+  labs(x = "Year", y = "House Prices ($)")
+
+ggplot(data = avocado_houses) +
+  geom_boxplot(mapping = aes(x = year, y = avocado_price)) +
+  labs(x = "Year", y = "Avocado Prices ($)")
+
+ggplot(data = avocado_houses) +
+  geom_boxplot(mapping = aes(x = year, y = avocado_volume)) +
+  labs(x = "Year", y = "Avocado Sales Volume")
+```
+
+From 2015 to 2018, house prices steadily rose from a mean price across the 4 California regions of \$ `r format(mean(avocado_houses[avocado_houses$year == "2015",]$house_price), scientific = FALSE, digits = 4)` to a mean of \$ `r format(mean(avocado_houses[avocado_houses$year == "2018",]$house_price, scientific = FALSE, digits = 4))`. Meanwhile, avocado prices rose at a slower rate, from a mean of \$ `r format(mean(avocado_houses[avocado_houses$year == "2015",]$avocado_price, scientific = FALSE, digits = 2))` to a mean of \$ `r format(mean(avocado_houses[avocado_houses$year == "2018",]$avocado_price, scientific = FALSE, digits = 2))`. Meanwhile, avocado sales volume stayed about the same in that time period . Therefore, house prices have risen at a much higher rate than the price and sales of avocados have, meaning the likely explanation for why millennials can't afford a home is because of the disproportionate home price increase.
