@@ -44,7 +44,7 @@ avocado <- avocado |>
 
 ## Challenge Problem
 
-### 1. Set-Up
+### Set-Up
 
 Data for this challenge comes from FRED's All Transcations House Price Index series for San Diego, LA, San Francsico, and Sacramento.
 
@@ -57,7 +57,7 @@ sanfran <- read_csv(here::here("supporting_artifacts", "supporting_data", "sanfr
 la <- read_csv(here::here("supporting_artifacts", "supporting_data", "la.csv"))
 ```
 
-### 2. Data Cleaning
+### Data Cleaning
 
 ```{r}
 #| message: false
@@ -87,31 +87,55 @@ house_prices <- sandiego |>
 
 ```
 
-### 3. Merge Data
+### Merge Data
 
 ```{r}
 avocado_houses <- house_prices |>
   inner_join(avocado_cal, by = c("city" = "region", "year" = "year"))
 ```
 
-### 4. Plot Data
+### Plot Data
+
+To scale the variables to be plotted together, I am using the rescale function created in Lab 7.
 
 ```{r}
-
-ggplot(data = avocado_houses) +
-  geom_boxplot(mapping = aes(x = year, y = house_price)) +
-  labs(x = "Year", y = "House Prices ($)") +
-  scale_color_brewer(palette = "Pastel1")
-
-ggplot(data = avocado_houses) +
-  geom_boxplot(mapping = aes(x = year, y = avocado_price)) +
-  labs(x = "Year", y = "Avocado Prices ($)") +
-  scale_color_brewer(palette = "Pastel1")
-
-ggplot(data = avocado_houses) +
-  geom_boxplot(mapping = aes(x = year, y = avocado_volume)) +
-  labs(x = "Year", y = "Avocado Sales Volume") +
-  scale_color_brewer(palette = "Pastel1")
+rescale_01 <- function(variable) {
+    stopifnot(is.numeric(variable),
+            length(variable) > 1)
+  variable = (variable - min(variable , na.rm = TRUE)) / 
+           (max(variable, na.rm = TRUE) - min(variable, na.rm = TRUE))
+  return(variable)
+}
 ```
 
-From 2015 to 2018, house prices steadily rose from a mean price across the 4 California regions of \$ `r format(mean(avocado_houses[avocado_houses$year == "2015",]$house_price), scientific = FALSE, digits = 4)` to a mean of \$ `r format(mean(avocado_houses[avocado_houses$year == "2018",]$house_price, scientific = FALSE, digits = 4))`. Meanwhile, avocado prices rose at a slower rate, from a mean of \$ `r format(mean(avocado_houses[avocado_houses$year == "2015",]$avocado_price, scientific = FALSE, digits = 2))` to a mean of \$ `r format(mean(avocado_houses[avocado_houses$year == "2018",]$avocado_price, scientific = FALSE, digits = 2))`. Meanwhile, avocado sales volume stayed about the same in that time period . Therefore, house prices have risen at a much higher rate than the price and sales of avocados have, meaning the likely explanation for why millennials can't afford a home is because of the disproportionate home price increase.
+```{r}
+avocado_houses_sum <- avocado_houses |>
+  group_by(year) |>
+  summarise(across(.cols = c(house_price:avocado_volume), .fns = mean)) |>
+  mutate(across(.cols = c(house_price:avocado_volume), .fns = rescale_01))
+  
+
+
+ggplot(data = avocado_houses_sum) +
+  geom_line(mapping = aes(x = year, y = house_price, group = 1), color = "#118AB2") +
+  geom_line(mapping = aes(x = year, y = avocado_price, group = 1), color = "#5D2E46") +
+  geom_line(mapping = aes(x = year, y = avocado_volume, group = 1), color = "#303A2B") +
+  labs(x = "Year", y = "House Prices ($)") +
+  annotate(geom = "label",
+           y = 0.25,
+           x = "2018", 
+           label = "Avocado Prices ($)",
+           color = "#5D2E46") +
+  annotate(geom = "label",
+           y = 0.75,
+           x = "2018", 
+           label = "Avocado Sales Volume",
+           color = "#303A2B") +
+  annotate(geom = "label",
+           y = 1,
+           x = "2018", 
+           label = "House Prices ($)",
+           color = "#118AB2")
+```
+
+From 2015 to 2018, house prices steadily rose. Meanwhile, avocado prices rose sharply from 2015 to 2017 and fell from 2017 to 2018. Avocado sales volume rose and sharply fell in 2017, at the same time as avocado prices peaked. Therefore, since 2015, millennials have responded to changes in avocado prices: buying more avocados when prices are low, and less when prices are high, while house prices have only risen.

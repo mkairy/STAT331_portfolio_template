@@ -6,6 +6,7 @@ format:
     mainfont: "Helvetica"
     fontcolor: "#624C2D"
     monobackgroundcolor: "#E9D9C3"
+    self-contained: true
 editor: visual
 ---
 

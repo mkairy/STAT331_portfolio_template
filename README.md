@@ -14,10 +14,26 @@ See instructions for creating your final portfolio [here](https://docs.google.co
 
 ### Demonstration of Learning Targets
 
+##### Lab 2
+##### Lab 3
+##### Lab 4
+##### Lab 7
+##### Lab 9
+
 ### Demonstration of Continued Learning
 
 #### Revising My Thinking
 
+##### Lab 3
+##### Lab 4
+
 #### Extending My Thinking
 
+##### Challenge 2
+##### Challenge 4
+##### Challenge 8
+
 ### Growth as a Team Member
+
+##### peer_review.png
+

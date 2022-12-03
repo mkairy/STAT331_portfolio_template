@@ -7,6 +7,7 @@ format:
     backgroundcolor: "#f0efed"
     fontcolor: "#624C2D"
     monobackgroundcolor: "#E9D9C3"
+    self-contained: true
 editor: visual
 execute: 
   echo: true
@@ -21,7 +22,7 @@ execute:
 
 library(tidyverse)
 library(here)
-library(ggthemr)
+
 ```
 
 #### Data
@@ -81,7 +82,6 @@ Month 02, February, is the month that had the highest volume of avocado sales.
 5\.
 
 ```{r}
-ggthemr(palette = 'dust')
 
 avocado_met <- avocado |>
   anti_join(y = major_regions, by = c("region" = "major_region")) |>
@@ -142,7 +142,7 @@ San Francisco had the highest price difference between organic and conventional 
 #| warning: false
 #| message: false
 
-ggthemr_reset()
+
 
 avocado_mean <- avocado |>
   semi_join(ca_city, by = c("region" = "city")) |>

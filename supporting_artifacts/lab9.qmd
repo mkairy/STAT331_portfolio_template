@@ -26,7 +26,7 @@ library(here)
 #| message: false
 #| warning: false
 
-names <- read_csv(here::here("Week 9", "StateNames_A.csv")) |>
+names <- read_csv(here::here("supporting_artifacts", "supporting_data", "StateNames_A.csv")) |>
   rename(Sex = Gender)
 
 ```
@@ -117,7 +117,7 @@ ggplot(data = model_1, aes(x = .resid)) +
   labs(x = "Residuals", y = "Density")
 ```
 
-The residuals are right skewed and centered around 0. Because the residuals are the actual - predicted value, we would hope to see residuals centered around 0, as that would indicate the regression doesn't consistently overestimate or underestimate values.
+The residuals are right skewed but have a mean around 0. Because the residuals are the actual - predicted value, we would hope to see residuals centered around 0, as that would indicate the regression doesn't consistently overestimate or underestimate values. However, the underestimates seem to be larger, than the underestimates.
 
 #### 8.
 
@@ -132,12 +132,14 @@ The coefficient on year is negative, meaning that each year, the number of Allis
 ```{r}
 names_Allen <- names |>
   filter(Sex == "M",
-         Name %in% c("Allen", "Allan", "Alan")) |>
+         Name %in% c("Allen", "Allan", "Alan"))
+  
+names_Allen_count <- names_Allen |>
   group_by(Year, Name) |>
   summarise(Count = sum(Count))
 
 
-ggplot(data = names_Allen, aes(x = Year, y = Count)) +
+ggplot(data = names_Allen_count, aes(x = Year, y = Count)) +
   geom_line(aes(color = Name)) +
   theme_light() +
   scale_fill_brewer(palette = "Paired") +
