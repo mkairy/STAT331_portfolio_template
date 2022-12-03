@@ -1,0 +1,168 @@
+---
+title: "Lab 9"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+    self-contained: true
+editor: visual
+---
+
+### Set - Up
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(here)
+```
+
+### Part 2
+
+```{r}
+#| message: false
+#| warning: false
+
+names <- read_csv(here::here("Week 9", "StateNames_A.csv")) |>
+  rename(Sex = Gender)
+
+```
+
+### Part 3
+
+#### 1.
+
+[In my first attempt at this problem, I forgot to include the output!]{style="color: brown;"}
+
+```{r}
+names_A <- names |>
+  mutate(CountA = ifelse(Name == "Allison", Count, 0))
+  
+names_A |>
+  group_by(State, Sex) |>
+  summarise(CountA = sum(CountA), .groups = "keep") |>
+  arrange(State)
+
+
+```
+
+#### 2.
+
+```{r}
+
+names_A <- names_A |>
+  filter(Sex == "F")
+```
+
+#### 3.
+
+[Originally, I thought it would be simpler to filter by name, rather than filtering by count and sex because there are no male Allisons. However, explicitly filtering by sex is clearer for the reader and is more thorough!]{style="color: brown;"}
+
+```{r}
+names_year <- names_A |>
+  group_by(Year) |>
+  summarise(Count = sum(Count), .groups = "keep")
+
+
+ggplot(data = names_year, aes(x = Year, y = Count)) +
+  geom_col(fill = "#bf5850") +
+  theme_light() 
+
+```
+
+### Part 4
+
+#### 4.
+
+```{r}
+
+model_1 <- names_year |>
+  lm(Count ~ Year, data = _)
+broom::tidy(model_1)
+```
+
+#### 5.
+
+```{r}
+#| message: false
+#| warning: false
+ggplot(data = names_year, aes(x = Year, y = Count)) +
+  geom_point(color = "#bf5850") +
+  geom_smooth(method = "lm", color = "#f7b034") +
+  theme_light()
+  
+```
+
+#### 6.
+
+[In my first attempt, I included epsilon because I have been so used to adding it when representing the results of a linear regression. However, because we are estimating the mean, the error is already accounted for and is, thus, not needed.]{style="color: brown;"}
+
+$\widehat{Allisons} = 3881.8 -1.88year$
+
+#### 7.
+
+[In my first attempt, I did not make a comment on the residuals (just an oversight). I have now included my observations of the pattern of the residuals.]{style="color: brown;"}
+
+```{r}
+#| message: false
+#| warning: false
+
+ggplot(data = model_1, aes(x = .resid)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "#bf5850") +
+  geom_density(color = "#f7b034", lwd = 1) +
+  theme_light() +
+  labs(x = "Residuals", y = "Density")
+```
+
+The residuals are right skewed and centered around 0. Because the residuals are the actual - predicted value, we would hope to see residuals centered around 0, as that would indicate the regression doesn't consistently overestimate or underestimate values.
+
+#### 8.
+
+The coefficient on year is negative, meaning that each year, the number of Allisons, or the popularity of the name "Allison," is decreasing, though it is decreasing only slightly, with each year predicted to have 1.88 fewer new Allisons.
+
+### Part 5
+
+#### 1.
+
+[I, at first, used geom_col to plot the Allen/Alan/Allan observations. However, I should have used geom_bar because geom_bar makes the column heights proportional to the number of observations, which would better represent the popularity of the names relative to each other over time.]{style="color: brown;"}
+
+```{r}
+names_Allen <- names |>
+  filter(Sex == "M",
+         Name %in% c("Allen", "Allan", "Alan")) |>
+  group_by(Year, Name) |>
+  summarise(Count = sum(Count))
+
+
+ggplot(data = names_Allen, aes(x = Year, y = Count)) +
+  geom_line(aes(color = Name)) +
+  theme_light() +
+  scale_fill_brewer(palette = "Paired") +
+  labs(y = "Count")
+```
+
+#### 2.
+
+```{r}
+#| message: false
+#| warning: false
+names_Allen_sum <- names_Allen |>
+  filter(Year == 2000,
+         State %in% c("CA", "PA")) |>
+  group_by(Name, State) |>
+  summarise(Count = sum(Count)) |>
+  pivot_wider(names_from = Name, values_from = Count)
+names_Allen_sum
+```
+
+#### 3.
+
+```{r}
+names_Allen_sum |>
+  mutate(Total = Alan + Allan + Allen,
+         across(.cols = Alan:Allen, .fns = ~./Total)) |>
+  select(-Total)
+```

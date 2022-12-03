@@ -1,0 +1,133 @@
+---
+title: "Lab 7: Functions and Fish"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+editor: visual
+execute: 
+  echo: true
+  error: true
+---
+
+### Set-Up
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+library(ggthemr)
+library(gt)
+library(gtExtras)
+```
+
+### Load Data
+
+```{r}
+#| warning: false
+#| message: false
+fish <- read_csv(here::here("Week 7", "BlackfootFish.csv"))
+```
+
+```{r}
+fish <- fish |>
+  mutate(trip = ifelse(trip == 1, "Trip 1", "Trip 2"))
+```
+
+### Part One
+
+#### Task 1
+
+```{r}
+
+fish |>
+  summarise(across(.cols = everything(), .fns = ~sum(is.na(.))))|>
+  gt() |>
+  gt_theme_nytimes() |>
+  tab_header(title = "Missing Observations by Variable")
+```
+
+There are 1,796 observations with missing data, all in the weight variable. No other variable has missing data.
+
+#### Task 2
+
+```{r}
+ggthemr("grape")
+missing_yst <- fish |>
+  group_by(year, section, trip) |>
+  mutate(year = as.character(year)) |>
+  summarise(missing = sum(is.na(weight)), .groups = "keep")
+
+ggplot(missing_yst) +
+  geom_col(mapping = aes(y = year, x = missing, fill = section)) +
+  facet_wrap(.~trip) +
+  guides(fill = guide_legend(title = "Section")) +
+  labs(x = "Year", y = "Number of Missing Observations")
+```
+
+### Part Two
+
+#### Task 1 and 2
+[When I first attempted this problem, I thought I was reducing repetition enough by creating a function for the whole equation and didn't think about further reducing repetition inside of my function. However, because the minimum is used twice, it reduces repetition *and* makes the function much easier to read when I assign the minimum and maximum functions to variable names first.]{style="color: brown;"}
+```{r}
+rescale_01 <- function(variable) {
+    stopifnot(is.numeric(variable),
+            length(variable) > 1)
+  
+  minimum <- min(variable , na.rm = TRUE)
+  maximum <- max(variable, na.rm = TRUE)
+  
+  variable <- (variable - minimum) / (maximum - minimum)
+  return(variable)
+}
+```
+
+#### Task 3
+
+```{r}
+x <- c(1:25, NA)
+rescale_x <- rescale_01(x)
+
+max(rescale_x, na.rm = TRUE)
+min(rescale_x, na.rm = TRUE)
+```
+
+#### Task 4
+
+```{r}
+#| layout-ncol: 2
+rescale_length_fish <- fish |>
+  mutate(length = rescale_01(length))
+
+ggplot(fish) +
+  geom_density(mapping = aes(x = length)) +
+  labs(x = "Length", y = "Number of Fish", caption = "Using Original Length")
+
+ggplot(rescale_length_fish) +
+  geom_density(mapping = aes(x = length), color = "blue") +
+  labs(x = "Length", y = "Number of Fish", caption = "Using Rescaled Length")
+
+```
+
+#### Task 5
+
+```{r}
+rescale_column <- function(data, variable) {
+  data = data |>
+    mutate(across(.cols = {{ variable }} , .fns = ~rescale_01(.)))
+  return(data)
+}
+```
+
+#### Task 6
+
+```{r}
+rescale_column(data = fish, variable = c(length, weight)) |>
+  head() |>
+  gt() |>
+  gt_theme_nytimes() |>
+  tab_header(title = "Blackfoot Fish with Rescaled Length and Weight Variables")
+
+```

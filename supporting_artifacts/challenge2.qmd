@@ -7,6 +7,7 @@ format:
     backgroundcolor: "#f0efed"
     fontcolor: "#624C2D"
     monobackgroundcolor: "#E9D9C3"
+    self-contained: true
 editor: visual
 execute: 
   echo: true

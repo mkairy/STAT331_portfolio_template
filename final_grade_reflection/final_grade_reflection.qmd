@@ -8,37 +8,31 @@ format:
 editor: visual
 ---
 
-Table of Contents:
-
-Lab 3 Question 10
-
-Lab 3 Question 9
-
-Lab 3 Question 4
-
-Lab 3 Question 7
-
-Challenge 4
-
-Lab 2 Question 1
-
-Lab 5
-
-Lab 2 Question 4
-
-Lab 2 Question 8
-
-Lab 3 Question 8
-
-Lab 4
-
-Challenge 2
-
 Through my work in this class so far, I believe I have earned an A.
 
  
 
 This quarter, I turned in most all of my assignments complete and on time, and all of the assignments I have turned in demonstrate my proficiency in the learning targets. 
+
+WD-1 and R-1 can be seen in data_import_practice
+
+WD-2 is in Lab 3 Q 10
+
+WD-3 is shown in Lab 3 Q9 and Q10
+
+WD-4 is in Lab 3 Q4
+
+WD-5 and WD-6 is in Challenge 4
+
+WD-7 (table pivot) is in
+
+R-1 is in Lab 2 Q1
+
+R-2 (tidy) is in Lab 5
+
+R-3 (reproducible) is in Lab 3 Q7
+
+DVS-1 is in
 
 When it comes to working with data, I showed proficiency in reading in, selecting, filtering (with simple filters and anti/semi_joins), mutating, and joining data. In my data_import_practice document I read a variety of data formats (CSV, xlsx, and txt) using the here function. I even used optional arguments for read.csv and read_delim to read the data cleanly (WD-1 and R-1). I demonstrated proficiency in selecting columns in my Lab 3 assignment in question 10, where I selected several columns simultaneously (WD-2). My submission for parts 9 and 10 of my Lab 3 assignment best reflect my ability to filter factor and numeric type data. In problem 9, I filtered by numeric variables using the "\>", "==" and "!=" comparison operators, and used the "%in%" operator in part 10. For date types, I filtered by date in Lab 5 question 3.1 (WD-3). I showed that I could modify data for various data types and purposes in Lab 3 question 4, where I used the mutate function to convert character types to numeric and factor types. In question 7 of Lab 3, I used the ifelse function within the mutate function to create binary variables (WD-4). Finally, I showed that I could filter and join data frames in the"Data Cleaning" portion of my Challenge 4 assignment. I used a semi_join to filter and then used multiple full_joins to combine four data sets into one (WD-5 and WD-6).
 
