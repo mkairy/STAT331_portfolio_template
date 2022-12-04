@@ -100,7 +100,7 @@ ggplot(data = names_year, aes(x = Year, y = Count)) +
 
 [In my first attempt, I included epsilon because I have been so used to adding it when representing the results of a linear regression. However, because we are estimating the mean, the error is already accounted for and is, thus, not needed.]{style="color: brown;"}
 
-$\widehat{Allisons} = 3881.8 -1.88year$
+$\widehat{Allisons} = -5359999.95 + 2799.63year$
 
 #### 7.
 
@@ -121,7 +121,7 @@ The residuals are right skewed but have a mean around 0. Because the residuals a
 
 #### 8.
 
-The coefficient on year is negative, meaning that each year, the number of Allisons, or the popularity of the name "Allison," is decreasing, though it is decreasing only slightly, with each year predicted to have 1.88 fewer new Allisons.
+The coefficient on year is positive, meaning that each year, the number of Allisons, or the popularity of the name "Allison," is actually predicted to increase.
 
 ### Part 5
 

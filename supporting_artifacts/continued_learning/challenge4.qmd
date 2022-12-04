@@ -1,0 +1,143 @@
+---
+title: "Challenge 4"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    backgroundcolor: "#f0efed"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+    self-contained: true
+editor: visual
+execute: 
+  echo: true
+  error: true
+---
+
+#### Set-Up
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(here)
+```
+
+#### Data
+
+```{r}
+#| message: false
+avocado <- read_csv(here::here("supporting_artifacts", "supporting_data", "avocado.csv"))
+```
+
+#### 1. Data Cleaning
+
+```{r}
+ca_city = data.frame(city = c("LosAngeles", "SanDiego", "Sacramento", "SanFrancisco"))
+
+avocado <- avocado |>
+  filter(region != "TotalUS") |>
+  rename(small = `4046`, large = `4225`, xlarge = `4770`)
+
+```
+
+## Challenge Problem
+
+### 2. Set-Up
+
+Data for this challenge comes from FRED's All Transcations House Price Index series for San Diego, LA, San Francsico, and Sacramento.
+
+```{r}
+#| message: false
+#| warning: false
+sandiego <- read_csv(here::here("supporting_artifacts", "supporting_data", "sandiego.csv"))
+sac <- read_csv(here::here("supporting_artifacts", "supporting_data", "sac.csv"))
+sanfran <- read_csv(here::here("supporting_artifacts", "supporting_data", "sanfran.csv"))
+la <- read_csv(here::here("supporting_artifacts", "supporting_data", "la.csv"))
+```
+
+### 3. Data Cleaning
+
+```{r}
+#| message: false
+avocado_cal <- avocado |>
+  semi_join(ca_city, by = c("region" = "city")) |>
+  group_by(region, year) |>
+  summarise(avocado_price = mean(AveragePrice),
+            avocado_volume = mean(`Total Volume`)) |>
+  mutate(year = as.factor(year))
+
+house_prices <- sandiego |>
+  full_join(sac, by = c("DATE" = "DATE")) |>
+  full_join(la, by = c("DATE" = "DATE")) |>
+  full_join(sanfran, by = c("DATE" = "DATE")) |>
+  separate(DATE, c("year", "month", "day"), "-") |>
+  rename(LosAngeles = ATNHPIUS06037A,
+         SanDiego = ATNHPIUS06073A,
+         SanFrancisco = ATNHPIUS41884Q,
+         Sacramento = ATNHPIUS06067A) |>
+  mutate(across(where(is.numeric), ~.*2000),
+         year = as.factor(year)) |>
+  pivot_longer(cols = SanDiego:SanFrancisco,
+               names_to = "city",
+               values_to = "price") |>
+  group_by(city, year) |>
+  summarise(house_price = mean(price, na.rm = TRUE))
+
+```
+
+### 4. Merge Data
+
+```{r}
+avocado_houses <- house_prices |>
+  inner_join(avocado_cal, by = c("city" = "region", "year" = "year"))
+```
+
+### 5. Plot Data
+
+[Originally, I plotted my data using 3 different boxplot visualizations, however, it wasn't a useful visualization to compare three different variables over the same period. In my revision, I summarised the data before plotting to create clean lines. To better compare the data, I rescaled the variables using the rescale function we used in a later lab.]{style="color: brown;"}
+
+To scale the variables to be plotted together, I am using the rescale function created in Lab 7.
+
+```{r}
+rescale_01 <- function(variable) {
+    stopifnot(is.numeric(variable),
+            length(variable) > 1)
+  variable = (variable - min(variable , na.rm = TRUE)) / 
+           (max(variable, na.rm = TRUE) - min(variable, na.rm = TRUE))
+  return(variable)
+}
+```
+
+```{r}
+avocado_houses_sum <- avocado_houses |>
+  group_by(year) |>
+  summarise(across(.cols = c(house_price:avocado_volume), .fns = mean)) |>
+  mutate(across(.cols = c(house_price:avocado_volume), .fns = rescale_01))
+  
+
+
+ggplot(data = avocado_houses_sum) +
+  geom_line(mapping = aes(x = year, y = house_price, group = 1), color = "#118AB2") +
+  geom_line(mapping = aes(x = year, y = avocado_price, group = 1), color = "#5D2E46") +
+  geom_line(mapping = aes(x = year, y = avocado_volume, group = 1), color = "#303A2B") +
+  labs(x = "Year", y = "House Prices ($)") +
+  annotate(geom = "label",
+           y = 0.25,
+           x = "2018", 
+           label = "Avocado Prices ($)",
+           color = "#5D2E46") +
+  annotate(geom = "label",
+           y = 0.75,
+           x = "2018", 
+           label = "Avocado Sales Volume",
+           color = "#303A2B") +
+  annotate(geom = "label",
+           y = 1,
+           x = "2018", 
+           label = "House Prices ($)",
+           color = "#118AB2")
+```
+
+From 2015 to 2018, house prices steadily rose. Meanwhile, avocado prices rose sharply from 2015 to 2017 and fell from 2017 to 2018. Avocado sales volume rose and sharply fell in 2017, at the same time as avocado prices peaked. Therefore, since 2015, millennials have responded to changes in avocado prices: buying more avocados when prices are low, and less when prices are high, while house prices have only risen.

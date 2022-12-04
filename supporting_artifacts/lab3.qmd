@@ -173,8 +173,6 @@ min_male <- hiphop |>
 
 c.  For white males over 30, the most familiar phrase on average is **5-0** and the least familiar are **`r toString(min_male[[1]])`**.
 
-<!-- -->
-
 10. 
 
 ```{r}

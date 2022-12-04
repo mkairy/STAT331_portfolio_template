@@ -31,7 +31,7 @@ library(here)
 avocado <- read_csv(here::here("supporting_artifacts", "supporting_data", "avocado.csv"))
 ```
 
-#### Data Cleaning
+#### 1. Data Cleaning
 
 ```{r}
 ca_city = data.frame(city = c("LosAngeles", "SanDiego", "Sacramento", "SanFrancisco"))
@@ -44,7 +44,7 @@ avocado <- avocado |>
 
 ## Challenge Problem
 
-### Set-Up
+### 2. Set-Up
 
 Data for this challenge comes from FRED's All Transcations House Price Index series for San Diego, LA, San Francsico, and Sacramento.
 
@@ -57,7 +57,7 @@ sanfran <- read_csv(here::here("supporting_artifacts", "supporting_data", "sanfr
 la <- read_csv(here::here("supporting_artifacts", "supporting_data", "la.csv"))
 ```
 
-### Data Cleaning
+### 3. Data Cleaning
 
 ```{r}
 #| message: false
@@ -87,14 +87,16 @@ house_prices <- sandiego |>
 
 ```
 
-### Merge Data
+### 4. Merge Data
 
 ```{r}
 avocado_houses <- house_prices |>
   inner_join(avocado_cal, by = c("city" = "region", "year" = "year"))
 ```
 
-### Plot Data
+### 5. Plot Data
+
+[Originally, I plotted my data using 3 different boxplot visualizations, however, it wasn't a useful visualization to compare three different variables over the same period. In my revision, I summarised the data before plotting to create clean lines. To better compare the data, I rescaled the variables using the rescale function we used in a later lab.]{style="color: brown;"}
 
 To scale the variables to be plotted together, I am using the rescale function created in Lab 7.
 

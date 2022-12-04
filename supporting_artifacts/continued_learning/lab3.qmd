@@ -1,0 +1,189 @@
+---
+title: "Lab 3"
+author: "Michelle Kairy"
+format: 
+  html:
+    mainfont: "Helvetica"
+    backgroundcolor: "#f0efed"
+    fontcolor: "#624C2D"
+    monobackgroundcolor: "#E9D9C3"
+    self-contained: true
+editor: visual
+execute: 
+  echo: true
+  error: true
+---
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(here)
+library(stringr)
+library(ggthemr)
+```
+
+### Hip Hop Data set
+
+```{r}
+#| message: false
+hiphop <- read_csv(here::here("supporting_artifacts", "supporting_data", "hiphop.csv"))
+num_subj <- nrow(distinct(hiphop, subj))
+num_words <- nrow(distinct(hiphop, word))
+```
+
+[Originally, I only described the dimensions and variable types of this data set, which would not have helped someone reviewing this file understand this data. I really should have described how the data was collected and measured and who participated in it.]{style="color: brown;"}
+
+1.  The *hiphop* data set includes information on `r num_subj` subjects' familiarity on `r num_words` words from African American English. The 168 subjects in this study were asked to participate in this study and are all students from the University of Minnesota, enrolled in undergraduate linguistics, sociology, or music classes. For each subject and vocabulary item, demographic (self reported), music preferences (reported as the number of artists students like in that genre), social network, and pop culture familiarity (recorded as 1-5 on the Likert scale for the students' response to a pop culture question) are recorded.
+
+2.  Each row in *hiphop* is an observation of one *subject*'s familiarity with one *word*.
+
+3.  The missing values in the data set were replaced with the mean value of the variable. This method has the benefit of keeping all observations when performing calculations, however, it may not reflect the true value of the summary statistics or lead to false results.
+
+4.  
+
+[I learned the str_replace_all method from the professor (Professor Jon James) I did research with this summer! I decided to remove it to to more easily see the ID; it was really just a preference and a chance to practice string methods.]{style="color: brown;"}
+
+```{r}
+hiphop <- hiphop |>
+  mutate(sex = as.factor(sex),
+         ethnic = as.factor(ethnic),
+         subj = as.numeric(str_replace_all(subj, "p", "")),
+         familiarity = as.numeric(familiarity))
+```
+
+5.  `r num_words` distinct AAE words were studied in the data set.
+
+6.  
+
+[I, originally, used "1" and "0" instead of "white" and "non-white" because I have been so used to seeing 1s and 0s used for binary variables, and I am very new to factors. However, using "white" and "non-white" here makes the most sense for readability and data wrangling.]{style="color: brown;"}
+
+```{r}
+#| message: false
+
+# note : I am not overwriting the hiphop data set here
+# because I wanted to use ethnic in a graph in a later question
+
+hiphop_ethnic <- hiphop |>
+  mutate(ethnic = ifelse(ethnic == "white", ethnic, "non-white"))
+```
+
+7.  
+
+```{r}
+hiphop |>
+  distinct(subj, .keep_all = TRUE) |>
+  mutate(sex = ifelse(sex == "Female", 1, 0),
+         ethnic = if_else(ethnic == "white", 1, 0)) |>
+  summarise(across(.cols = c(age, sex, ethnic),
+                   .fns = mean,
+                   .names = "mean_{.col}"))
+```
+
+The participants in this study are mostly young, white (80%), and female (70%) with an average age of about 20.
+
+8.  
+
+```{r}
+#| message: false
+
+hiphop_individual <- hiphop |>
+  distinct(subj, .keep_all = TRUE)
+
+ggthemr(palette = 'lilac')
+
+#1
+ggplot(data = hiphop_individual) +
+  geom_bar(mapping = aes(x = sex, fill = ethnic)) +
+  labs(x= "Sex",
+       y= "Number of Subjects",
+       title = "Number of Subjects by Sex and Ethnicity")
+
+
+#2
+ggplot(data = hiphop_individual) +
+  geom_histogram(mapping = aes(y = countyBlack,
+                               fill = sex)) +
+  labs(x = "Number of Subjects",
+       y = "African American Population in Home County",
+       title = "Number of Subjects by\n African American Population in Home County")
+```
+
+9.  a
+
+[At first I thought using the slice() function would be more efficient because I could get the maximum and minimum familiarity words in one line, however, because slice() only uses row indices, it didn't include ties. This meant that I instead of including 4 minimum familiarity words in part b and 25 minimum familiarity words in part c, I only included 1. While I wish there were a function that could call the maximum and minimum rows at the same time, for now, slice_max and slice_min are the way to go.]{style="color: brown;"}
+
+```{r}
+
+hiphop |>
+  filter(age < 20) |>
+  group_by(word) |>
+  summarise(famil = sum(familiarity)) |>
+  slice_max(order_by = famil)
+
+
+hiphop |>
+  filter(age < 20) |>
+  group_by(word) |>
+  summarise(famil = sum(familiarity)) |>
+  slice_min(order_by = famil)
+
+```
+
+a.  For people under 20, the most familiar phrase on average is **off the hook** and the least familiar is **catch the vapors**.
+
+9.b
+
+```{r}
+
+hiphop |>
+  filter(sex == "Female", ethnic != "white") |>
+  group_by(word) |>
+  summarise(famil = sum(familiarity)) |>
+  slice_max(order_by = famil)
+
+min_female <- hiphop |>
+  filter(sex == "Female", ethnic != "white") |>
+  group_by(word) |>
+  summarise(famil = sum(familiarity)) |>
+  slice_min(order_by = famil)
+```
+
+b.  For non-white females, the most familiar phrase on average is **feel me** and the least familiar are **`r toString(min_female[[1]])`**.
+
+*I learned the toString() function from https://www.geeksforgeeks.org/convert-elements-of-a-vector-to-strings-in-r-language-tostring-function/*
+
+9.c
+
+```{r}
+
+
+hiphop |>
+  filter(sex == "Male", ethnic == "white", age > 30) |>
+  group_by(word) |>
+  summarise(famil = sum(familiarity)) |>
+  slice_max(order_by = famil)
+
+min_male <- hiphop |>
+  filter(sex == "Male", ethnic == "white", age > 30) |>
+  group_by(word) |>
+  summarise(famil = sum(familiarity)) |>
+  slice_min(order_by = famil)
+```
+
+c.  For white males over 30, the most familiar phrase on average is **5-0** and the least familiar are **`r toString(min_male[[1]])`**.
+
+10. 
+
+```{r}
+hiphop |>
+  distinct(subj, .keep_all = TRUE) |>
+  filter(age %in% 17:23,
+         sex == "Male",
+         ethnic == "white",
+         city %in% 10000:60000) |>
+  select(subj, age, sex, city, ethnic, bieber) |>
+  slice_max(order_by = bieber)
+```
+
+I believe the individual that is secretly Justin Bieber is subject 17, as this subject meets all the criteria for Bieber (white, 17-23, male, living in a city of 10,000 to 60,000) and has the highest *bieber* score (number of known Bieber songs).
